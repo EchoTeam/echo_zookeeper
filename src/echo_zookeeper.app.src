@@ -1,0 +1,12 @@
+{application, echo_zookeeper,
+ [
+  {description, ""},
+  {vsn, "1.0.0"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { echo_zookeeper_app, []}},
+  {env, []}
+ ]}.
