@@ -155,8 +155,8 @@ handle_call({set, Path, Data}, _From, #state{zk_connection = ZK, chroot = Chroot
     {reply, ZKResponse, State};
 
 handle_call({add_consumer, Pid}, _From, #state{consumers = OldConsumers} = State) ->
-    Exists = lists:member(Pid, OldCustomers),
-    if Exists = false ->
+    Exists = lists:member(Pid, OldConsumers),
+    if Exists == false ->
             erlang:monitor(process, Pid),
             {noreply, State#state{consumers = [Pid | OldConsumers]}};
         true -> {noreply, State}
