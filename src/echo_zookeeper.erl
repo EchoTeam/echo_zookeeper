@@ -86,7 +86,11 @@ set(Path, Data) when is_binary(Data) ->
 
 % Add consumer process to notify about connection status
 add_consumer(Pid) ->
-    gen_server:call(?MODULE, {add_consumer, Pid}).
+    try gen_server:call(?MODULE, {add_consumer, Pid}) of
+        _ -> ok
+    catch
+        _ -> error
+    end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % gen_server callbacks
@@ -151,8 +155,12 @@ handle_call({set, Path, Data}, _From, #state{zk_connection = ZK, chroot = Chroot
     {reply, ZKResponse, State};
 
 handle_call({add_consumer, Pid}, _From, #state{consumers = OldConsumers} = State) ->
-    erlang:monitor(process, Pid),
-    {noreply, State#state{consumers = [Pid | OldConsumers]}};
+    Exists = lists:member(Pid, OldCustomers),
+    if Exists = false ->
+            erlang:monitor(process, Pid),
+            {noreply, State#state{consumers = [Pid | OldConsumers]}};
+        true -> {noreply, State}
+    end;
 
 handle_call(Request, _From, State) ->
     lager:warning("[handle_call] Unknown call: ~p", [Request]),
