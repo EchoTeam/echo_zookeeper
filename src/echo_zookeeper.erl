@@ -89,7 +89,7 @@ add_consumer(Pid) ->
     try gen_server:call(?MODULE, {add_consumer, Pid}) of
         _ -> ok
     catch
-        _ -> error
+        _:_ -> error
     end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
