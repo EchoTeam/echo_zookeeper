@@ -152,7 +152,7 @@ handle_call({set, Path, Data}, _From, #state{zk_connection = ZK, chroot = Chroot
 
 handle_call({add_consumer, Pid}, _From, #state{consumers = OldConsumers} = State) ->
     erlang:monitor(process, Pid),
-    {noreply, State#state{consumers = [Pid | OldConsumers]}}.
+    {noreply, State#state{consumers = [Pid | OldConsumers]}};
 
 handle_call(Request, _From, State) ->
     lager:warning("[handle_call] Unknown call: ~p", [Request]),
@@ -168,7 +168,7 @@ handle_info(reconnect, #state{zk_connection = undefined } = State) ->
     {noreply, NewState};
 
 handle_info({'DOWN', _MonRef, process, Pid, _}, State = #state{consumers = OldConsumers}) ->
-    {noreply, State#state{consumers = lists:delete(Pid, OldConsumers)}}.
+    {noreply, State#state{consumers = lists:delete(Pid, OldConsumers)}};
 
 handle_info({'EXIT', Pid, Reason}, #state{zk_connection = Pid, consumers = Consumers} = State) ->
     lager:warning("[handle_info] Got EXIT message from a connection stored in the state: ~p; Reason: ~p", [Pid, Reason]),
