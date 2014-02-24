@@ -15,6 +15,7 @@
     create/2,
     delete/1,
     exists/1,
+    add_consumer/1,
     get/1,
     getw/3,
     set/2
@@ -83,6 +84,10 @@ getw(Path, FromPid, FromTag) ->
 set(Path, Data) when is_binary(Data) ->
     gen_server:call(?MODULE, {set, Path, Data}).
 
+% Add consumer process to notify about connection status
+add_consumer(Pid) ->
+    gen_server:call(?MODULE, {add_consumer, Pid}).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % gen_server callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -145,6 +150,10 @@ handle_call({set, Path, Data}, _From, #state{zk_connection = ZK, chroot = Chroot
     lager:info("[handle_call] {set ~p} = ~p", [{Path, FullPath}, ZKResponse]),
     {reply, ZKResponse, State};
 
+handle_call({add_consumer, Pid}, _From, #state{consumers = OldConsumers} = State) ->
+    erlang:monitor(process, Pid),
+    {noreply, State#state{consumers = [Pid | OldConsumers]}}.
+
 handle_call(Request, _From, State) ->
     lager:warning("[handle_call] Unknown call: ~p", [Request]),
     {reply, {error, unknown_call}, State}.
@@ -157,6 +166,9 @@ handle_info(reconnect, #state{zk_connection = undefined } = State) ->
     lager:warning("[handle_info] reconnect. Trying to reconnect..."),
     NewState = reconnect(self(), State),
     {noreply, NewState};
+
+handle_info({'DOWN', _MonRef, process, Pid, _}, State = #state{consumers = OldConsumers}) ->
+    {noreply, State#state{consumers = lists:delete(Pid, OldConsumers)}}.
 
 handle_info({'EXIT', Pid, Reason}, #state{zk_connection = Pid, consumers = Consumers} = State) ->
     lager:warning("[handle_info] Got EXIT message from a connection stored in the state: ~p; Reason: ~p", [Pid, Reason]),
