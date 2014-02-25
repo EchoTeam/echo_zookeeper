@@ -24,9 +24,8 @@ init([]) ->
     {ok, {{one_for_one, 10, 10}, specs()}}.
 
 specs() ->
-    case application:get_all_key(zookeeper) of
-        {ok, ZK} -> 
-            application:get_all_key(zookeeper),
+    case application:get_all_key(echo_zookeeper) of
+        {ok, ZK} ->
             [
 		        {
 			        echo_zookeeper,
