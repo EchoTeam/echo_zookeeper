@@ -89,7 +89,7 @@ add_consumer(Pid) ->
     try gen_server:call(?MODULE, {add_consumer, Pid}) of
         _ -> ok
     catch
-        _:_ -> error
+        _:_ -> lager:warning("add_consumer call failed"),error
     end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -24,23 +24,26 @@ init([]) ->
     {ok, {{one_for_one, 10, 10}, specs()}}.
 
 specs() ->
-    {ok, Hosts} = application:get_env(zookeeper, hosts),
-    {ok, Chroot} = application:get_env(zookeeper, chroot), 
-	[
-		{
-			echo_zookeeper,
-			{
-				echo_zookeeper,
-				start_link,
-				[
-					[{Host, Port, 30000, 10000} || [Host, Port] <- Hosts],
-					Chroot,
-					[]
-				]
-			},
-			permanent, 10000, worker, [echo_zookeeper]
-		}
-	].
+    case application:get_all_key(zookeeper) of
+        {ok, ZK} -> 
+            application:get_all_key(zookeeper),
+            [
+		        {
+			        echo_zookeeper,
+			        {
+				        echo_zookeeper,
+				        start_link,
+				        [
+					        [{Host, Port, 30000, 10000} || [Host, Port] <- proplists:get_value(hosts, ZK)],
+					        proplists:get_value(chroot, ZK),
+					        []
+				        ]
+			        },
+			        permanent, 10000, worker, [echo_zookeeper]
+		        }
+	        ];
+        _ -> lager:error("Config is not available, starting empty"),[]
+    end.
 
 reconfigure() ->
     superman:reconfigure_supervisor_init_args(?MODULE, []).
