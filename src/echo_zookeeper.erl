@@ -1,6 +1,5 @@
 %%%
-%%% Copyright (c) 2012 JackNyfe. All rights reserved.
-%%% THIS SOFTWARE IS PROPRIETARY AND CONFIDENTIAL. DO NOT REDISTRIBUTE.
+%%% Copyright (c) 2008-2014 JackNyfe, Inc. <info@jacknyfe.com>
 %%%
 
 % vim: ts=4 sts=4 sw=4 expandtab
